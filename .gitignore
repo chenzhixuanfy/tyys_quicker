@@ -1,0 +1,10 @@
+config.json
+in.txt
+venv
+
+.idea
+.vscode
+
+*.jpg
+*.jpeg
+*.png
