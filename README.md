@@ -13,12 +13,6 @@
 安装依赖的包：
 `pip install -r requirement.txt`
 
-[解决报错（可选）](https://github.com/facebookresearch/nougat/issues/40)`AttributeError: module 'cv2.dnn' has no attribute 'DictValue'`：
-`pip install opencv-python --upgrade`
-
-解决报错（可选）`AttributeError: module 'PIL.Image' has no attribute 'ANTIALIAS'`：
-`pip install ddddocr --upgrade`
-
 ## 在`main.py`所在目录下创建`config.json`，内容为统一身份验证的用户名和密码：
 ```json
 {
