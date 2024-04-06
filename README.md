@@ -42,5 +42,8 @@ buddies是同伴列表，填写同伴的统一身份认证用户名和密码，�
 ```
 优先遍历时间，只有这个场馆的这个场地的所有时间都被预约时，才会遍历之后的场地。一般对时间有要求，对场地号没要求，所以场次起始时间填一个就可以了。
 
-## start_time参数选择脚本运行时间（如果不填start_time参数，默认立刻执行脚本），运行脚本：
+## start_time参数选择脚本运行时间，运行脚本：
 `python main.py --input ./in.txt --start_time "2024-04-04 17:15:30" --mode interval`
+
+如果不填start_time参数，默认立刻执行脚本：
+`python main.py --input ./in.txt --mode interval`
