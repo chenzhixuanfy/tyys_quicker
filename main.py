@@ -209,7 +209,7 @@ class User(object):
             response = self.get_info(reserver.venue_site_id, reserver.date)
             if str(response['code']) != '200':
                 return response
-            logger.info(response)
+            # logger.info(response)
             info = response["data"]["reservationDateSpaceInfo"][
                 reserver.date]
             token = response["data"]["token"]
