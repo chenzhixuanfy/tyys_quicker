@@ -23,11 +23,16 @@ from dateutil import tz
 from Crypto.Cipher import AES
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input', type=str)
-parser.add_argument('--mode', choices=['interval', 'once', 'debug'])
-parser.add_argument('--start_time',
-                    default=datetime.datetime.now(tz.gettz('Asia/Shanghai')).strftime("%Y-%m-%d %H:%M:%S"), # 该参数不填，默认在当前时刻执行
+parser.add_argument('-i', '--input', type=str, default='./in.txt', metavar='',
+                    help='场馆预约信息文件，默认为 ./in.txt')
+parser.add_argument('-m', '--mode', choices=['interval', 'once', 'debug'], default='interval',  metavar='',
+                    help="选择模式：interval, once, debug")
+parser.add_argument('-t', '--start_time',  metavar='',
+                    default=datetime.datetime.now(tz.gettz('Asia/Shanghai')).strftime("%Y-%m-%d %H:%M:%S"), 
+                    help='选择脚本运行时间，格式形如"2024-04-04 17:15:30"。默认为立刻执行'
                     )
+parser.add_argument('-b', '--buddy', default=-1, metavar='',
+                    help='输入同伴码。默认自动获取同伴码，需要同伴通行证')
 args = parser.parse_args()
 schedule = BlockingScheduler()
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
@@ -204,6 +209,7 @@ class User(object):
             response = self.get_info(reserver.venue_site_id, reserver.date)
             if str(response['code']) != '200':
                 return response
+            logger.info(response)
             info = response["data"]["reservationDateSpaceInfo"][
                 reserver.date]
             token = response["data"]["token"]
@@ -482,13 +488,16 @@ def listener(event):
 
 
 def job(user, buddies, reserver, mode):
-    buddy_no = ""
-    for buddy in buddies:
-        tmp = User(buddy['username'], buddy['password'])
-        if buddy_no != "":
-            buddy_no += ","
-        buddy_no += str(tmp.get_buddy_no())
-    logger.info(f'buddy_no: {buddy_no}')
+    if int(args.buddy) < 0:
+        buddy_no = ""
+        for buddy in buddies:
+            tmp = User(buddy['username'], buddy['password'])
+            if buddy_no != "":
+                buddy_no += ","
+            buddy_no += str(tmp.get_buddy_no())
+        logger.info(f'buddy_no: {buddy_no}')
+    else:
+        buddy_no = int(args.buddy)
     return user.exec(buddy_no, reserver, mode)
 
 
