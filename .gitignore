@@ -5,6 +5,6 @@ venv
 .idea
 .vscode
 
-*.jpg
-*.jpeg
-*.png
+/*.jpg
+/*.jpeg
+/*.png
