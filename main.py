@@ -374,11 +374,23 @@ class User(object):
         ocr = ddddocr.DdddOcr(beta=True)
 
         img = base64.b64decode(base64_img)
+
+        if 1: # 是否进行灰度化预处理
+            # 将二进制数据转换为NumPy数组
+            nparr = np.frombuffer(img, np.uint8)
+            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            # 转换为灰度图像
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # 将灰度化后的图像编码回二进制数据
+            _, img = cv2.imencode('.jpg', gray_image)
+
+        # 下面这两行貌似可以不需要
         stream = BytesIO(img)
         image_bytes = stream.read()
 
         poses = det.detection(image_bytes) # 使用 ddddocr 检测图像中字的位置，返回[x1, y1, x2, y2]，用以确定包含目标的一个矩形区域。
 
+        # 将二进制图像数据转为张量，方便后面切片操作（im[y1:y2, x1:x2]）
         arr = np.frombuffer(img, np.uint8)
         im = cv2.imdecode(arr, cv2.IMREAD_COLOR)
 

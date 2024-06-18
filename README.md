@@ -82,7 +82,7 @@ buddies是同伴列表（需要至少和该同伴手动预约过一次），填�
 
 当然，多次识别不准确，验证码错误，会增加第二个错误出现的概率。验证码尝试太多次也会被提醒稍后再试。
 
-首先需要提高ocr_captcha函数识别验证码的准确性，进一步，是提高以下两步的准确性：
+对于第一个问题，需要提高ocr_captcha函数识别验证码的准确性，具体的，是提高以下两步的准确性：
 ```python
 poses = det.detection(image_bytes) # 使用 ddddocr 检测图像中字的位置，返回[x1, y1, x2, y2]，用以确定包含目标的一个矩形区域。
 ```
@@ -90,4 +90,12 @@ poses = det.detection(image_bytes) # 使用 ddddocr 检测图像中字的位置�
 ```python
 res = ocr.classification(cropped_img) # 识别[x1, y1, x2, y2]区域内的汉字
 ```
-目前上面两部都是基于ddddocr，可以采用更好的方案。
+目前上面两步都是基于ddddocr，可以采用更好的方案，例如使用更高级的OCR引擎（可能不方便跨平台部署）或者对图像进行预处理。
+
+在某些情况下，灰度化图像有助于提高识别准确率。
+
+对于第二个问题，可能需要增加延时：
+```python
+logger.info(f'验证码错误，重试中...')
+time.sleep(0.1)
+```
