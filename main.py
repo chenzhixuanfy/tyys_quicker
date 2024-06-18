@@ -235,7 +235,7 @@ class User(object):
             #     json.dump(info, f, ensure_ascii=False, indent=4)
 
             while True:
-                order = self.choose_space(info, reserver)
+                order = self.choose_space(info, reserver) # 选择场馆
 
                 if len(order) == 0:
                     logger.critical("所有场次均被预约")
@@ -277,7 +277,7 @@ class User(object):
                         buddy_ids += ","
                     buddy_ids += str(buddy["id"])
 
-            captcha_verification = self.solve_captcha(mode='clickWord')
+            captcha_verification = self.solve_captcha(mode='clickWord') # 识别验证码，返回的是一串加密后的字符串
 
             # logger.info(captcha_verification)
 
@@ -377,7 +377,7 @@ class User(object):
         stream = BytesIO(img)
         image_bytes = stream.read()
 
-        poses = det.detection(image_bytes)
+        poses = det.detection(image_bytes) # 使用 ddddocr 检测图像中字的位置，返回[x1, y1, x2, y2]，用以确定包含目标的一个矩形区域。
 
         arr = np.frombuffer(img, np.uint8)
         im = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -389,7 +389,7 @@ class User(object):
             cv2.imwrite("cropped.jpg", cropped_img)
             with open("cropped.jpg", 'rb') as f:
                 cropped_img = f.read()
-            res = ocr.classification(cropped_img)
+            res = ocr.classification(cropped_img) # 识别[x1, y1, x2, y2]区域内的汉字
             decode_dict[res] = {
                 'x': int((x1 + x2) / 2),
                 'y': int((y1 + y2) / 2),
@@ -400,7 +400,7 @@ class User(object):
             if word in decode_dict.keys():
                 res.append(decode_dict[word])
             else:
-                candidates = list(filter(lambda x: x not in word_list, decode_dict.keys()))
+                candidates = list(filter(lambda x: x not in word_list, decode_dict.keys())) # 从 decode_dict 的键中筛选出不在 word_list 中的键（即字），并返回这些键的列表
                 # 碰运气
                 res.append(decode_dict[random.choice(candidates)])
         return res
@@ -442,6 +442,10 @@ class User(object):
 
     def solve_captcha(self, mode='clickWord'):
         def h(*wargs):
+            """
+            使用 AES 加密算法对输入进行加密，并返回 Base64 编码的结果。
+            内部函数 pkcs7 用于填充数据，使其符合 AES 加密的要求。
+            """
             def pkcs7(m):
                 return m + (chr(16 - len(m) % 16) * (16 - len(m) % 16)).encode('utf-8')
 
@@ -458,16 +462,22 @@ class User(object):
         if mode == 'clickWord':
             while True:
                 data = self.solve_click_word()
+
+                # with open("click_word.json", "w", encoding="utf-8") as f:
+                #     json.dump(data, f, ensure_ascii=False, indent=4)
+
                 base64_img = data['originalImageBase64']
                 word_list = data['wordList']
                 token = data['token']
-                point_arr = self.ocr_captcha(base64_img, word_list)
+                point_arr = self.ocr_captcha(base64_img, word_list) # ocr，输入base64编码的图像，按顺序返回字的坐标。决定是否能过验证的关键一步。
 
+                # 如果数据中包含 secretKey，使用它对识别结果 point_arr 进行加密，否则直接加密。
                 if 'secretKey' in data.keys():
                     secret_key = data['secretKey']
                     point_json = h(to_str(point_arr), secret_key)
                 else:
                     point_json = h(to_str(point_arr))
+
                 params = {
                     'captchaType': mode,
                     'pointJson': point_json,
@@ -489,7 +499,7 @@ class User(object):
                         token + '---' + to_str(point_arr))
                 else:
                     logger.info(f'验证码错误，重试中...')
-                    time.sleep(0.1)
+                    time.sleep(0.1) # 有时貌似验证图片没有刷新出来，是不是这里的延时太短了？
         elif mode == 'blockPuzzle':
             # 暂时没用到
             raise NotImplementedError
