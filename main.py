@@ -216,6 +216,9 @@ class User(object):
 
             while True:
                 order = self.choose_space(info, reserver)
+
+                logger.info(order)
+
                 if len(order) == 0:
                     logger.critical("所有场次均被预约")
                     return None
