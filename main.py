@@ -367,6 +367,21 @@ class User(object):
             "timestamp": timestamp
         })
         return res.json()['data']
+    
+    def Hanzi_filter(self, text):
+        # 定义一个匹配汉字的正则表达式模式
+        pattern = re.compile(r'[\u4e00-\u9fff]')
+        
+        # 使用 findall 方法查找字符串中所有的汉字
+        chinese_characters = pattern.findall(text)
+        
+        # 根据不同情况返回结果
+        if len(chinese_characters) == 0: # 如果输入字符串中不含有汉字，则返回0
+            return 0
+        elif len(chinese_characters) == 1 and len(text) == 1: # 如果输入字符串中只有一个汉字，则直接返回输入字符串（目前没有发现识别出2个汉字的情况）
+            return text
+        else: # 如果输入字符串中同时有汉字和非汉字，则返回剔除非汉字部分的字符串
+            return ''.join(chinese_characters)
 
     # @staticmethod # 不需要这个修饰吧
     def ocr_captcha(self, base64_img, word_list):
@@ -400,6 +415,7 @@ class User(object):
         im = cv2.imdecode(arr, cv2.IMREAD_COLOR)
 
         decode_dict = {}
+        i = 0
         for box in poses:
             x1, y1, x2, y2 = box
             cropped_img = im[y1:y2, x1:x2]
@@ -407,10 +423,17 @@ class User(object):
             with open("cropped.jpg", 'rb') as f:
                 cropped_img = f.read()
             res = ocr.classification(cropped_img) # 识别[x1, y1, x2, y2]区域内的汉字
+
+            res = self.Hanzi_filter(res)
+            if res == 0: # 识别出来的不是汉字，也要，因为有时候就是没识别出汉字
+                res = str(i) # 确保字典的key不重复，否则只会记录最后一个
+
             decode_dict[res] = {
                 'x': int((x1 + x2) / 2),
                 'y': int((y1 + y2) / 2),
             }
+
+            i+=1
 
         with open(f"ocr_save/{timestamp}.json", "w", encoding="utf-8") as f:
             json.dump(decode_dict, f, ensure_ascii=False, indent=4)
