@@ -368,14 +368,19 @@ class User(object):
         })
         return res.json()['data']
 
-    @staticmethod
-    def ocr_captcha(base64_img, word_list):
+    # @staticmethod # 不需要这个修饰吧
+    def ocr_captcha(self, base64_img, word_list):
         det = ddddocr.DdddOcr(det=True)
         ocr = ddddocr.DdddOcr(beta=True)
 
         img = base64.b64decode(base64_img)
 
-        if 1: # 是否进行灰度化预处理
+        timestamp = self.get_timestamp()
+
+        with open(f"ocr_save/{timestamp}.png", "wb") as image_file:
+            image_file.write(img)
+
+        if 0: # 是否进行灰度化预处理
             # 将二进制数据转换为NumPy数组
             nparr = np.frombuffer(img, np.uint8)
             image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -406,6 +411,9 @@ class User(object):
                 'x': int((x1 + x2) / 2),
                 'y': int((y1 + y2) / 2),
             }
+
+        with open(f"ocr_save/{timestamp}.json", "w", encoding="utf-8") as f:
+            json.dump(decode_dict, f, ensure_ascii=False, indent=4)
 
         res = []
         for word in word_list:
