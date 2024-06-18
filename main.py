@@ -210,14 +210,17 @@ class User(object):
             if str(response['code']) != '200':
                 return response
             # logger.info(response)
+
+            # info存储了这个场馆各个场地的信息，见info.json。每个场地为一个字典，其中"id"表示场地id（唯一），"spaceName"表示场地号。
             info = response["data"]["reservationDateSpaceInfo"][
                 reserver.date]
             token = response["data"]["token"]
 
+            with open("info.json", "w", encoding="utf-8") as f:
+                json.dump(info, f, ensure_ascii=False, indent=4)
+
             while True:
                 order = self.choose_space(info, reserver)
-
-                logger.info(order)
 
                 if len(order) == 0:
                     logger.critical("所有场次均被预约")
