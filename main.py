@@ -13,6 +13,7 @@ import hashlib
 import argparse
 import logging
 import cv2
+import copy
 
 import numpy as np
 
@@ -194,12 +195,14 @@ class User(object):
         if space_id > N or space_id < 1: # 如果不在合理区间，则随机选择一个场地
             space_id = random.randint(1, N) # 生成1-N之间的随机整数，包括1和N
 
-        # 通过操作数组顺序，选择场地号
-        target_space = info.pop(space_id - 1) # 提取出目标场地
-        random.shuffle(info) # 打乱列表的其余位置
-        info.insert(0, target_space) # 将目标场地插入到首位
+        info_sh = copy.deepcopy(info) # 如果不使用深度拷贝，将直接改变函数调用时的实参
 
-        for space in info:
+        # 通过操作数组顺序，选择场地号
+        target_space = info_sh.pop(space_id - 1) # 提取出目标场地
+        random.shuffle(info_sh) # 打乱列表的其余位置
+        info_sh.insert(0, target_space) # 将目标场地插入到首位
+
+        for space in info_sh:
             for key, value in space.items():
                 if key.isnumeric() and value["reservationStatus"] == 1 and value["startDate"] in reserver.candidate:
                     # if reserver.n_site == 2:
@@ -261,6 +264,9 @@ class User(object):
                 if res["code"] == 200:
                     logger.info(order)
                     break
+            
+            # with open("buddy_list.json", "w", encoding="utf-8") as f:
+            #     json.dump(res, f, ensure_ascii=False, indent=4)
 
             buddy_list = res["data"]["buddyList"]
 
@@ -272,6 +278,8 @@ class User(object):
                     buddy_ids += str(buddy["id"])
 
             captcha_verification = self.solve_captcha(mode='clickWord')
+
+            # logger.info(captcha_verification)
 
             # 防止：{'code': 250, 'message': '预约步骤流程耗时异常，订单提交失败', 'data': None}
             time.sleep(1)

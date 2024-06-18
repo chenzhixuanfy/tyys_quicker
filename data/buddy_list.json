@@ -1,0 +1,106 @@
+{
+    "code": 200,
+    "message": "OK",
+    "data": {
+        "venueInfoBean": {
+            "campusId": 51,
+            "campusIdStr": "紫金港校区",
+            "campusName": "紫金港校区",
+            "venueName": "风雨操场",
+            "siteName": "羽毛球场",
+            "venueId": 22,
+            "venueSiteId": 23,
+            "openStartDate": "07:00",
+            "openEndDate": "22:30",
+            "isFee": 1,
+            "buddyNumMax": 7,
+            "buddyNumMin": 1,
+            "buddyFamilyNumMax": 0
+        },
+        "orderDetailList": [
+            {
+                "id": 0,
+                "gmtCreate": null,
+                "gmtModified": null,
+                "isDeleted": null,
+                "orderUuid": null,
+                "orderNo": null,
+                "startDate": "2024-06-20 21:30",
+                "endDate": "2024-06-20 22:30",
+                "orderFee": null,
+                "orderFeeDetail": null,
+                "orderFeeCount": null,
+                "venueSpaceId": 95,
+                "venueSpaceName": "3号",
+                "isGateIn": null,
+                "isGateOut": null,
+                "remark": null,
+                "promiseStatus": null,
+                "venueSpaceGroupId": null,
+                "venueGroupName": null,
+                "timeId": 6987,
+                "feeRule": null,
+                "oldOrderDetailId": null
+            }
+        ],
+        "phone": "15067174925",
+        "isCaptchaCheck": 1,
+        "buddyList": [
+            {
+                "id": 105195,
+                "userUid": "320*99",
+                "name": "李鑫宇",
+                "userPhone": "",
+                "buddyType": null,
+                "userId": 7725,
+                "userRoleId": 3,
+                "attachData": null,
+                "gmtCreate": "2024-04-06 16:09:37"
+            },
+            {
+                "id": 104920,
+                "userUid": "320*20",
+                "name": "吴文菲",
+                "userPhone": "17***903",
+                "buddyType": null,
+                "userId": 18751,
+                "userRoleId": 3,
+                "attachData": null,
+                "gmtCreate": "2024-04-04 17:04:42"
+            },
+            {
+                "id": 104918,
+                "userUid": "320*64",
+                "name": "蔡万宜",
+                "userPhone": "15***000",
+                "buddyType": null,
+                "userId": 13248,
+                "userRoleId": 3,
+                "attachData": null,
+                "gmtCreate": "2024-04-04 17:00:33"
+            },
+            {
+                "id": 87213,
+                "userUid": "320*68",
+                "name": "翁昊哲",
+                "userPhone": "18***372",
+                "buddyType": null,
+                "userId": 40068,
+                "userRoleId": 3,
+                "attachData": null,
+                "gmtCreate": "2023-10-12 09:56:22"
+            },
+            {
+                "id": 83310,
+                "userUid": "320*58",
+                "name": "陈悦锴",
+                "userPhone": "18***919",
+                "buddyType": null,
+                "userId": 48316,
+                "userRoleId": 3,
+                "attachData": null,
+                "gmtCreate": "2023-08-21 16:52:35"
+            }
+        ]
+    }
+}
