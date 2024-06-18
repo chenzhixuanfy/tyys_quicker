@@ -51,8 +51,8 @@ class Reserver:
             # 请输入候选开始时间(hh:mm)，空格隔开:
             candidate_str = f.readline().replace('\n', '')
             self.candidate = [self.date + " " + i for i in candidate_str.split(" ")]
-            # 请输入预约场数(1/2):
-            self.n_site = f.readline().replace('\n', '')
+            # 请输入优先预约的场地号:
+            self.space_id = f.readline().replace('\n', '')
             # 请输入同伴姓名（必须一起预约过）:
             companion_str = f.readline().replace('\n', '')
             self.companion = companion_str.split(" ")
@@ -63,7 +63,7 @@ class Reserver:
         logger.info("场地编号: " + str(self.venue_site_id))
         logger.info("预约日期: " + str(self.date))
         logger.info("候选时间: " + str(self.candidate))
-        logger.info("预约场数: " + str(self.n_site))
+        logger.info("场地号: " + str(self.space_id))
         logger.info("同伴: " + str(self.companion))
         logger.info("手机号: " + self.phone)
         logger.info("-----------------\n")
@@ -188,20 +188,31 @@ class User(object):
 
     @staticmethod
     def choose_space(info, reserver):
+        N = len(info)
+        space_id = int(reserver.space_id)
+        # 这里的space_id实际上指的是info中的"spaceName"而不是"id"
+        if space_id > N or space_id < 1: # 如果不在合理区间，则随机选择一个场地
+            space_id = random.randint(1, N) # 生成1-N之间的随机整数，包括1和N
+
+        # 通过操作数组顺序，选择场地号
+        target_space = info.pop(space_id - 1) # 提取出目标场地
+        random.shuffle(info) # 打乱列表的其余位置
+        info.insert(0, target_space) # 将目标场地插入到首位
+
         for space in info:
             for key, value in space.items():
                 if key.isnumeric() and value["reservationStatus"] == 1 and value["startDate"] in reserver.candidate:
-                    if reserver.n_site == 2:
-                        if str(int(key) + 1) in space.keys() and space[key + 1]["reservationStatus"] == 1:
-                            return [{
-                                "spaceId": str(space["id"]), "timeId": str(int(key) + 1), "venueSpaceGroupId": None
-                            }, {
-                                "spaceId": str(space["id"]), "timeId": str(key), "venueSpaceGroupId": None
-                            }]
-                    else:
-                        return [{
-                            "spaceId": str(space["id"]), "timeId": str(key), "venueSpaceGroupId": None
-                        }]
+                    # if reserver.n_site == 2:
+                    #     if str(int(key) + 1) in space.keys() and space[key + 1]["reservationStatus"] == 1:
+                    #         return [{
+                    #             "spaceId": str(space["id"]), "timeId": str(int(key) + 1), "venueSpaceGroupId": None
+                    #         }, {
+                    #             "spaceId": str(space["id"]), "timeId": str(key), "venueSpaceGroupId": None
+                    #         }]
+                    # else:
+                    return [{
+                        "spaceId": str(space["id"]), "timeId": str(key), "venueSpaceGroupId": None
+                    }]
         return []
 
     def order(self, buddy_no, reserver):
@@ -211,13 +222,14 @@ class User(object):
                 return response
             # logger.info(response)
 
-            # info存储了这个场馆各个场地的信息，见info.json。每个场地为一个字典，其中"id"表示场地id（唯一），"spaceName"表示场地号。
+            # info存储了这个场馆各个场地的信息，见info.json。每个场地为一个字典，其中"id"表示场地id（唯一，但是不连续），"spaceName"表示场地号。
+            # "reservationStatus"是预约信息，1表示可预约，4表示已被预约。
             info = response["data"]["reservationDateSpaceInfo"][
                 reserver.date]
             token = response["data"]["token"]
 
-            with open("info.json", "w", encoding="utf-8") as f:
-                json.dump(info, f, ensure_ascii=False, indent=4)
+            # with open("info.json", "w", encoding="utf-8") as f:
+            #     json.dump(info, f, ensure_ascii=False, indent=4)
 
             while True:
                 order = self.choose_space(info, reserver)
