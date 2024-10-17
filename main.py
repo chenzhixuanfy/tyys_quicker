@@ -105,28 +105,65 @@ class User(object):
         data = {
             'username': self.username,
             'password': encrypt_password,
+            'authcode': '',
             'execution': execution,
             '_eventId': 'submit'
         }
-        res = self.sess.post(url=self.login_url, data=data)
+        # 使用allow_redirects=False关闭自动重定向，否则状态码是200而不是302，并且响应头部中找不到
+        # "Location": "http://www.tyys.zju.edu.cn/venue-server/sso/manageLogin?ticket=ST-1502458-5r7KVsfGQSALcrEUKtKm-zju.edu.cn"
+        # res = self.sess.post(url=self.login_url, data=data)
+        res = self.sess.post(url=self.login_url, data=data, allow_redirects=False)
 
-        # check if login successfully
-        if '统一身份认证' in res.content.decode():
-            raise LoginError('登录失败，请核实账号密码重新登录')
+        # # check if login successfully
+        # if '统一身份认证' in res.content.decode():
+        #     raise LoginError('登录失败，请核实账号密码重新登录')
+        
+        # logger.info(res.status_code)
+        # for header, value in res.headers.items():
+        #     logger.info(f"{header}: {value}")
+        url_ST = res.headers["Location"] # 获取重定向url
+        # logger.info(url)
+
+        res = self.sess.post(url_ST, allow_redirects=False) # 使用allow_redirects=False关闭自动重定向
+        # logger.info(res.headers)
+        url_jsessionid = res.headers["Location"] # 获取重定向url
+
+        res = self.sess.post(url_jsessionid, allow_redirects=False) # 使用allow_redirects=False关闭自动重定向
+        # logger.info(res.headers)
+        url_oauth_token = res.headers["Location"] # 获取重定向url
+        # logger.info(url_oauth_token)
+
+        # 匹配oauth_token=后面的部分的正则表达式
+        pattern = r'oauth_token=([^&]+)'
+        # 查找所有匹配项
+        matches = re.search(pattern, url_oauth_token)
+        # 输出匹配到的部分
+        if matches:
+            oauth_token = matches.group(1)
+            logger.info(f"OAuth Token Value: {oauth_token}")
+        else:
+            logger.info("No match found.")
+
+        res = self.sess.get(url_oauth_token, allow_redirects=False)
 
         timestamp = self.get_timestamp()
         self.sign = self.get_sign(path="/api/login", timestamp=timestamp, params={})
         sso_token = self.sess.cookies.get("sso_zju_tyb_token")
+        
         res = self.sess.post("http://www.tyys.zju.edu.cn/venue-server/api/login",
                              headers={
+                                 "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
                                  "accept": "application/json, text/plain, */*",
                                  "accept-language": "zh-CN,zh;q=0.9",
                                  "app-key": "8fceb735082b5a529312040b58ea780b",
                                  "content-type": "application/x-www-form-urlencoded",
                                  "sign": self.sign,
                                  "sso-token": sso_token,
+                                 "oauth-token": oauth_token,
                                  "timestamp": timestamp
                              })
+                            
+        # logger.info(res.content.decode())
         self.access_token = res.json()["data"]["token"]["access_token"]
 
         timestamp = self.get_timestamp()
