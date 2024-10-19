@@ -1,7 +1,4 @@
-# [原脚本地址](https://github.com/IshiKura-a/Quicker)
-
 # ZJU场馆预约脚本
-！！！本项目遵循GPL开源协议
 
 ## 执行脚本前需要安装需要的环境和包
 安装虚拟环境：
